@@ -7,7 +7,7 @@
 
 #define WIDTH 10
 #define HEIGHT 10
-#define TOTAL_SIZE WIDTH * HEIGHT
+#define TOTAL_SIZE 100
 
 #define PLAYER 'P'
 #define GOLD 'G'
@@ -39,6 +39,114 @@ char env[100] =
     'x',' ','x','x','x','x','x','x','x','x',
     'x',' ',' ',' ',' ',' ',' ',' ',' ',' ',
 };
+
+/* Display our grid from global env array */
+void render();
+
+/* Python equivalent string*number */
+void characterMultiply(char c, int multi);
+
+/* A horizontal seperator */
+void sep();
+
+/* Return slot from character single dimensional array using x and y */
+char vector(int x, int y, char grid[]);
+
+/* set slot to given character */
+void setvector(int x, int y, char c, char grid[]);
+
+/* get single dimensional index by treating them as multi dimensional array */
+int getvector(int x, int y);
+
+/* If you have `i` and want its x position */
+int vectorX(int i);
+
+/* If you have `i` and want its y position */
+int vectorY(int i);
+
+/* check whether the slot is empty */
+int isemptyslot(int x, int y, char grid[]);
+
+/* get random slot from character grid */
+char getrandomslot(char grid[]);
+
+/* get random index based on len of single dimensional array */
+int getrandomvector();
+
+/* get index of empty slot from character grid */
+int getemptyslot(char grid[]);
+
+/* set player to some empty position */
+void initplayer(char grid[]);
+
+/* Congrats, How do you want to celebrate do here. */
+void won();
+
+/* move player if empty slot */
+void moveplayer(int move, char grid[]);
+
+/* Our well known main function */
+int main() {
+    srand(time(NULL));
+
+    WINDOW *w;
+    int ch;
+
+    /* Curses Initialisations */
+    w = initscr();
+    raw();
+    keypad(stdscr, TRUE);
+    noecho();
+    timeout(3000);
+
+    /* Initializing Player */
+    initplayer(env);
+
+    /* Clear screen first */
+    clear();
+
+    printw("Welcome - Press # to Exit\n");
+
+    while((ch = getch()) != '#') {
+
+        switch(ch)
+        {
+        case KEY_UP:
+            moveplayer(MOVE_UP, env);
+            break;
+        case KEY_DOWN:
+            moveplayer(MOVE_DOWN, env);
+            break;
+        case KEY_LEFT:
+            moveplayer(MOVE_LEFT, env);
+            break;
+        case KEY_RIGHT:
+            moveplayer(MOVE_RIGHT, env);
+            break;
+        }
+        /* Clear screen */
+        clear();
+
+        // print our board
+        render();
+
+        if (WON) {
+            won();
+            refresh();
+            break;
+        }
+    }
+
+    if (WON) {
+        printw("You won in %d moves", MOVES);
+    }
+
+    /* End Curses */
+    getch();
+    endwin();
+
+    return 0;
+}
 
 /**
  * Display our grid from global env array
@@ -144,7 +252,7 @@ int isemptyslot(int x, int y, char grid[]) {
  * @return      random slot from grid
  */
 char getrandomslot(char grid[]) {
-    int y = rand() % HEIGHT;
+    int y = rand() % 10;
     int x = rand() % WIDTH;
     return vector(x, y, grid);
 }
@@ -232,67 +340,4 @@ void moveplayer(int move, char grid[]) {
     if(isgold) {
         WON = 1;
     }
-}
-
-
-int main() {
-    srand(time(NULL));
-
-    WINDOW *w;
-    int ch;
-
-    /* Curses Initialisations */
-    w = initscr();
-    raw();
-    keypad(stdscr, TRUE);
-    noecho();
-    timeout(3000);
-
-    /* Initializing Player */
-    initplayer(env);
-
-    /* Clear screen first */
-    clear();
-
-    printw("Welcome - Press # to Exit\n");
-
-    while((ch = getch()) != '#') {
-
-        switch(ch)
-        {
-        case KEY_UP:
-            moveplayer(MOVE_UP, env);
-            break;
-        case KEY_DOWN:
-            moveplayer(MOVE_DOWN, env);
-            break;
-        case KEY_LEFT:
-            moveplayer(MOVE_LEFT, env);
-            break;
-        case KEY_RIGHT:
-            moveplayer(MOVE_RIGHT, env);
-            break;
-        }
-        /* Clear screen */
-        clear();
-
-        // print our board
-        render();
-
-        if (WON) {
-            won();
-            refresh();
-            break;
-        }
-    }
-
-    if (WON) {
-        printw("You won in %d moves", MOVES);
-    }
-
-    /* End Curses */
-    getch();
-    endwin();
-
-    return 0;
 }
