@@ -185,15 +185,19 @@ int main(int argc, char *argv[]) {
 
         switch(ch)
         {
+        case 'w':
         case KEY_UP:
             moveplayer(MOVE_UP, env);
             break;
+        case 's':
         case KEY_DOWN:
             moveplayer(MOVE_DOWN, env);
             break;
+        case 'a':
         case KEY_LEFT:
             moveplayer(MOVE_LEFT, env);
             break;
+        case 'd':
         case KEY_RIGHT:
             moveplayer(MOVE_RIGHT, env);
             break;
