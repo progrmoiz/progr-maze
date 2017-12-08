@@ -1,15 +1,30 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 // It is not part of the C standard library
 // #include <conio.h>
-#include <time.h>
-#include <stdlib.h>
+#include <ncurses.h>
 
 #define WIDTH 10
-#define TOTAL_SIZE 100
+#define HEIGHT 10
+#define TOTAL_SIZE WIDTH * HEIGHT
 
 #define PLAYER 'P'
-#define KEY_UP
+#define GOLD 'G'
+
+// #define KEY_UP 119
+// #define KEY_DOWN 115
+// #define KEY_LEFT 97
+// #define KEY_LEFT 100
+
+#define MOVE_UP 1
+#define MOVE_DOWN 2
+#define MOVE_LEFT 3
+#define MOVE_RIGHT 4
+
+int PLAYER_POS = 0;
+int MOVES = 0;
+int WON = 0;
 
 char env[100] =
 {
@@ -32,11 +47,11 @@ char env[100] =
 void render() {
     // system("clear");
     // clear();
-    printf("\n");
-    for (int i = 0; i < 100; i++) {
-        printf("%c", env[i]);
-        if ((i+1) % 10 == 0) {
-            printf("\n");
+    printw("\n");
+    for (int i = 0; i < TOTAL_SIZE; i++) {
+        printw("%c", env[i]);
+        if ((i+1) % WIDTH == 0) {
+            printw("\n");
         }
     }
 }
@@ -72,11 +87,26 @@ char vector(int x, int y, char grid[]) {
     return grid[x + WIDTH*y];
 }
 
+/**
+ * set slot to given character
+ * @param x    x-axis
+ * @param y    y-axis
+ * @param c    a character to replace with
+ * @param grid a single dimensional character array
+ */
 void setvector(int x, int y, char c, char grid[]) {
     grid[x + WIDTH*y] = c;
 }
 
-// move vector
+/**
+ * get single dimensional index by treating them as multi dimensional array
+ * @param  x x-axis
+ * @param  y y-axis
+ * @return   get single dimensional index
+ */
+int getvector(int x, int y) {
+    return x + WIDTH*y;
+}
 
 /**
  * If you have `i` and want its x position
@@ -114,7 +144,7 @@ int isemptyslot(int x, int y, char grid[]) {
  * @return      random slot from grid
  */
 char getrandomslot(char grid[]) {
-    int y = rand() % 10;
+    int y = rand() % HEIGHT;
     int x = rand() % WIDTH;
     return vector(x, y, grid);
 }
@@ -150,6 +180,7 @@ int getemptyslot(char grid[]) {
  */
 void initplayer(char grid[]) {
     int index = getemptyslot(grid);
+    PLAYER_POS = index;
 
     // can also do this
     // grid[index] = PLAYER;
@@ -160,7 +191,108 @@ void initplayer(char grid[]) {
     setvector(x, y, PLAYER, grid);
 }
 
+/**
+ * Congrats, How do you want to celebrate do here.
+ */
+void won() {
+    clear();
+    printw("Won");
+}
+
+/**
+ * move player if empty slot
+ * @param move Possible Values: MOVE_UP, MOVE_DOWN, MOVE_LEFT, MOVE_RIGHT
+ * @param grid A single dimenstional array
+ */
+void moveplayer(int move, char grid[]) {
+    int playerx = vectorX(PLAYER_POS);
+    int playery = vectorY(PLAYER_POS);
+    switch (move) {
+        case MOVE_UP:
+            playery -= 1;
+            break;
+        case MOVE_DOWN:
+            playery += 1;
+            break;
+        case MOVE_LEFT:
+            playerx -= 1;
+            break;
+        case MOVE_RIGHT:
+            playerx += 1;
+            break;
+    }
+    int isgold = vector(playerx, playery, grid) == GOLD;
+
+    if (isemptyslot(playerx, playery, grid) || isgold) {
+        MOVES += 1;
+        grid[PLAYER_POS] = ' ';
+        PLAYER_POS = getvector(playerx, playery);
+        setvector(playerx, playery, PLAYER, grid);
+    }
+    if(isgold) {
+        WON = 1;
+    }
+}
+
+
 int main() {
-    printf("Progr Maze -- Moiz\n");
+    srand(time(NULL));
+
+    WINDOW *w;
+    int ch;
+
+    /* Curses Initialisations */
+    w = initscr();
+    raw();
+    keypad(stdscr, TRUE);
+    noecho();
+    timeout(3000);
+
+    /* Initializing Player */
+    initplayer(env);
+
+    /* Clear screen first */
+    clear();
+
+    printw("Welcome - Press # to Exit\n");
+
+    while((ch = getch()) != '#') {
+
+        switch(ch)
+        {
+        case KEY_UP:
+            moveplayer(MOVE_UP, env);
+            break;
+        case KEY_DOWN:
+            moveplayer(MOVE_DOWN, env);
+            break;
+        case KEY_LEFT:
+            moveplayer(MOVE_LEFT, env);
+            break;
+        case KEY_RIGHT:
+            moveplayer(MOVE_RIGHT, env);
+            break;
+        }
+        /* Clear screen */
+        clear();
+
+        // print our board
+        render();
+
+        if (WON) {
+            won();
+            refresh();
+            break;
+        }
+    }
+
+    if (WON) {
+        printw("You won in %d moves", MOVES);
+    }
+
+    /* End Curses */
+    getch();
+    endwin();
+
     return 0;
 }
