@@ -5,11 +5,11 @@
 // #include <conio.h>
 #include <ncurses.h>
 
-#define WIDTH 10
-#define HEIGHT 10
-#define TOTAL_SIZE 100
+// #define WIDTH 10
+// #define HEIGHT 10
+// #define TOTAL_SIZE 100
 
-#define PLAYER 'P'
+// #define PLAYER 'P'
 #define GOLD 'G'
 
 // #define KEY_UP 119
@@ -22,23 +22,78 @@
 #define MOVE_LEFT 3
 #define MOVE_RIGHT 4
 
+char PLAYER = 'P';
+
 int PLAYER_POS = 0;
 int MOVES = 0;
 int WON = 0;
 
-char env[100] =
-{
-    'x','x','x','x','x','x','x','x','x','x',
-    'x',' ',' ',' ',' ',' ',' ',' ',' ',' ',
-    'x','x',' ','x',' ','x',' ','x',' ','x',
-    'x','x',' ','x',' ','x',' ','x',' ','x',
-    'x',' ',' ',' ',' ',' ',' ',' ',' ',' ',
-    'x','x','x','x','x','x','x',' ',' ','x',
-    'x','x','x','x','x','x','x',' ',' ','x',
-    'x',' ','G',' ',' ',' ',' ',' ',' ',' ',
-    'x',' ','x','x','x','x','x','x','x','x',
-    'x',' ',' ',' ',' ',' ',' ',' ',' ',' ',
-};
+int WIDTH = 10;
+int HEIGHT = 10;
+
+// char env[100] =
+// {
+//     'x','x','x','x','x','x','x','x','x','x',
+//     'x',' ',' ',' ',' ',' ',' ',' ',' ',' ',
+//     'x','x',' ','x',' ','x',' ','x',' ','x',
+//     'x','x',' ','x',' ','x',' ','x',' ','x',
+//     'x',' ',' ',' ',' ',' ',' ',' ',' ',' ',
+//     'x','x','x','x','x','x','x',' ',' ','x',
+//     'x','x','x','x','x','x','x',' ',' ','x',
+//     'x',' ','G',' ',' ',' ',' ',' ',' ',' ',
+//     'x',' ','x','x','x','x','x','x','x','x',
+//     'x',' ',' ',' ',' ',' ',' ',' ',' ',' ',
+// };
+
+char env[10000];
+
+void buildenv(char *path) {
+    FILE *fp;
+    char buff[255];
+
+    fp = fopen(path, "r");
+
+    if ( fp == NULL ) {
+        // error handling..
+    }
+
+    // users inputed width and height
+    int width, height;
+    fscanf(fp, "%d%d", &height, &width);
+
+    int line = 0;
+    int w = 0;
+    int h = 0;
+    while (fgets(buff, 255, (FILE*)fp) != NULL) {
+        // calculating the width
+        w = -1;
+        for (int i = 0; buff[i] != '\0'; i+=1) {
+            env[i+line] = buff[i];
+            w += 1;
+        }
+        // calculating the height
+        h += 1;
+        line += w;
+    }
+
+    // users inputed width and height else our calculated width and height
+    if (width != 0 && height != 0) {
+        WIDTH = width;
+        HEIGHT = height;
+    } else {
+        WIDTH = w;
+        HEIGHT = h;
+    }
+    printf("%d, %d", WIDTH, HEIGHT);
+    printf("%d, %d", width, height);
+
+    fclose(fp);
+}
+
+/* Total Size of array :( */
+int TOTALSIZE() {
+    return WIDTH * HEIGHT;
+}
 
 /* Display our grid from global env array */
 void render();
@@ -87,6 +142,9 @@ void moveplayer(int move, char grid[]);
 
 /* Our well known main function */
 int main() {
+
+    buildenv("levels/level1.txt");
+
     srand(time(NULL));
 
     WINDOW *w;
@@ -131,17 +189,18 @@ int main() {
         render();
 
         if (WON) {
-            won();
             refresh();
             break;
         }
     }
 
     if (WON) {
-        printw("You won in %d moves", MOVES);
+        printw("Congratulations!. You done this in %d moves.\n", MOVES);
+        printw("Press any key to exit\n");
     }
 
     /* End Curses */
+    getch();
     getch();
     endwin();
 
@@ -156,8 +215,15 @@ void render() {
     // system("clear");
     // clear();
     printw("\n");
-    for (int i = 0; i < TOTAL_SIZE; i++) {
-        printw("%c", env[i]);
+    for (int i = 0; i < TOTALSIZE(); i++) {
+
+        // M is special one
+        if (env[i] == 'M') {
+            addch((char)0x25A0);
+        } else {
+            printw("%c", env[i]);
+        }
+
         if ((i+1) % WIDTH == 0) {
             printw("\n");
         }
@@ -261,8 +327,12 @@ char getrandomslot(char grid[]) {
  * get random index based on len of single dimensional array
  * @return random index
  */
-int getrandomvector() {
-    return rand() % TOTAL_SIZE;
+int getrandomvector(int limit) {
+    if (limit == 0) {
+        return rand() % TOTALSIZE();
+    } else {
+        return rand() % limit;
+    }
 }
 
 /**
@@ -272,7 +342,8 @@ int getrandomvector() {
  */
 int getemptyslot(char grid[]) {
     while (1) {
-        int r = getrandomvector();
+        // try to place in first two lines
+        int r = getrandomvector(WIDTH*2);
         int x = vectorX(r);
         int y = vectorY(r);
         if (isemptyslot(x, y, grid)) {
@@ -307,12 +378,20 @@ void won() {
     printw("Won");
 }
 
+int toggle = 1;
+
 /**
  * move player if empty slot
  * @param move Possible Values: MOVE_UP, MOVE_DOWN, MOVE_LEFT, MOVE_RIGHT
  * @param grid A single dimenstional array
  */
 void moveplayer(int move, char grid[]) {
+    toggle = !toggle;
+    if (move == MOVE_UP || move == MOVE_DOWN) {
+        PLAYER = '|';
+    } else {
+        PLAYER = toggle ? '\\' : '/';
+    }
     int playerx = vectorX(PLAYER_POS);
     int playery = vectorY(PLAYER_POS);
     switch (move) {
