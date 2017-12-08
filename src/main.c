@@ -4,6 +4,7 @@
 // It is not part of the C standard library
 // #include <conio.h>
 #include <ncurses.h>
+#include <string.h>
 
 // #define WIDTH 10
 // #define HEIGHT 10
@@ -141,9 +142,19 @@ void won();
 void moveplayer(int move, char grid[]);
 
 /* Our well known main function */
-int main() {
+int main(int argc, char *argv[]) {
+    // path build
+    char path[17];
+    strcpy(path, "levels/level");
+    // if no arguments our default else user prefered
+    if (argc < 2) {
+        strcat(path, "0");
+    } else {
+        strcat(path, argv[1]);
+    }
+    strcat(path, ".txt");
 
-    buildenv("levels/level1.txt");
+    buildenv(path);
 
     srand(time(NULL));
 
@@ -152,6 +163,11 @@ int main() {
 
     /* Curses Initialisations */
     w = initscr();
+
+    // assci blocks doesn't support colors
+    if (env[0] != 'M') {
+        start_color();
+    }
     raw();
     keypad(stdscr, TRUE);
     noecho();
@@ -163,7 +179,7 @@ int main() {
     /* Clear screen first */
     clear();
 
-    printw("Welcome - Press # to Exit\n");
+    render();
 
     while((ch = getch()) != '#') {
 
@@ -195,7 +211,12 @@ int main() {
     }
 
     if (WON) {
-        printw("Congratulations!. You done this in %d moves.\n", MOVES);
+        sep();
+        init_pair(1, COLOR_GREEN, COLOR_BLACK);
+        attron(COLOR_PAIR(1));
+        printw("Congratulations!. ");
+        attroff(COLOR_PAIR(1));
+        printw("You done this in %d moves.\n", MOVES);
         printw("Press any key to exit\n");
     }
 
@@ -217,9 +238,19 @@ void render() {
     printw("\n");
     for (int i = 0; i < TOTALSIZE(); i++) {
 
-        // M is special one
+        // M is special block
         if (env[i] == 'M') {
-            addch((char)0x25A0);
+            addch((char)0x2588);
+        } else if (env[i] == '|' || env[i] == '\\' || env[i] == '/' || env[i] == 'P') {
+            init_pair(1, COLOR_BLUE, COLOR_BLACK);
+            attron(COLOR_PAIR(1));
+            printw("%c", env[i]);
+            attroff(COLOR_PAIR(1));
+        } else if (env[i] == 'G') {
+            init_pair(2, COLOR_YELLOW, COLOR_BLACK);
+            attron(COLOR_PAIR(2));
+            printw("%c", env[i]);
+            attroff(COLOR_PAIR(2));
         } else {
             printw("%c", env[i]);
         }
@@ -237,7 +268,7 @@ void render() {
  */
 void characterMultiply(char c, int multi) {
     for (int i = 0; i < multi; i++) {
-        printf("%c", c);
+        printw("%c", c);
     }
 }
 
@@ -245,9 +276,8 @@ void characterMultiply(char c, int multi) {
  * A horizontal seperator
  */
 void sep() {
-    printf("\n");
-    characterMultiply('-', 80);
-    printf("\n");
+    characterMultiply('-', 60);
+    printw("\n");
 }
 
 /**
