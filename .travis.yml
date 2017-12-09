@@ -3,5 +3,6 @@ script: make && make test
 compiler:
   - gcc
 before_install:
+  - sudo apt-get -qq update
   - sudo apt-get install gcc -y
   - sudo apt-get install libncurses5-dev libncursesw5-devz
