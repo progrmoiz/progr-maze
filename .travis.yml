@@ -1,2 +1,10 @@
 language: c
-script: ./configure && make && make test
+os:
+  - linux
+compiler:
+  - gcc
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install gcc -y
+  - sudo apt-get install -y libncurses5
+script: make && make test

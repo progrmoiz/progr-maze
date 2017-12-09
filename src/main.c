@@ -6,11 +6,7 @@
 #include <ncurses.h>
 #include <string.h>
 #include <signal.h>
-#ifdef _WIN32
-#include <Windows.h>
-#else
 #include <unistd.h>
-#endif
 
 // #define WIDTH 10
 // #define HEIGHT 10
@@ -201,11 +197,7 @@ int main(int argc, char *argv[]) {
         sep();
         refresh();
         //sleep:
-        #ifdef _WIN32
-        Sleep(100);
-        #else
         sleep(1);
-        #endif
         WON ? exit(0) : exit(1);
     }
 
@@ -243,7 +235,8 @@ void buildenv(char *path) {
     while (fgets(buff, 255, (FILE*)fp) != NULL) {
         // calculating the width
         w = -1;
-        for (int i = 0; buff[i] != '\0'; i+=1) {
+        int i;
+        for (i = 0; buff[i] != '\0'; i+=1) {
             env[i+line] = buff[i];
             w += 1;
         }
@@ -272,7 +265,8 @@ void render() {
     // system("clear");
     // clear();
     printw("\n");
-    for (int i = 0; i < TOTALSIZE(); i++) {
+    int i;
+    for (i = 0; i < TOTALSIZE(); i++) {
 
         // M is special block
         if (env[i] == 'M') {
@@ -303,7 +297,8 @@ void render() {
  * @param multi multiplier
  */
 void characterMultiply(char c, int multi) {
-    for (int i = 0; i < multi; i++) {
+    int i;
+    for (i = 0; i < multi; i++) {
         printw("%c", c);
     }
 }
