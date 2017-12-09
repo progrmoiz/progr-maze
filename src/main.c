@@ -243,7 +243,8 @@ void buildenv(char *path) {
     while (fgets(buff, 255, (FILE*)fp) != NULL) {
         // calculating the width
         w = -1;
-        for (int i = 0; buff[i] != '\0'; i+=1) {
+        int i;
+        for (i = 0; buff[i] != '\0'; i+=1) {
             env[i+line] = buff[i];
             w += 1;
         }
@@ -272,7 +273,8 @@ void render() {
     // system("clear");
     // clear();
     printw("\n");
-    for (int i = 0; i < TOTALSIZE(); i++) {
+    int i;
+    for (i = 0; i < TOTALSIZE(); i++) {
 
         // M is special block
         if (env[i] == 'M') {
@@ -303,7 +305,8 @@ void render() {
  * @param multi multiplier
  */
 void characterMultiply(char c, int multi) {
-    for (int i = 0; i < multi; i++) {
+    int i;
+    for (i = 0; i < multi; i++) {
         printw("%c", c);
     }
 }
