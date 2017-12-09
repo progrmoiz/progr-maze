@@ -4,7 +4,7 @@ PROJECT_NAME = progrmaze
 
 .PHONY: all project check test clean
 
-all: clean project install
+all: clean project
 
 CFLAG = -Wall -g
 CC = gcc
