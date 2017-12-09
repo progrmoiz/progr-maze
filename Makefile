@@ -6,4 +6,4 @@ project:
 	$(MAKE) -C src
 
 test:
-	$(MAKE) -c test
+	$(MAKE) -C test
