@@ -43,3 +43,4 @@ $ ./progrmaze a
 ## TODO
 - add random flag
 - feeling luck rainbow color on level
+- argument parsing

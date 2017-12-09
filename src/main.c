@@ -104,23 +104,37 @@ void won();
 /* move player if empty slot */
 void moveplayer(int move, char grid[]);
 
+/* let's play */
+void play();
+
 /* Our well known main function */
 int main(int argc, char *argv[]) {
+
+    printf("Maze playground by Moiz\n");
+    if (argc != 2) {
+        printf("usage: progrmaze <level>\n");
+        exit(EXIT_FAILURE);
+    }
+
     // build our path from arguments
     char path[17];
     strcpy(path, "./levels/level");
-    // if no arguments our default else user prefered
-    if (argc < 2) {
-        strcat(path, "0");
-    } else {
-        strcat(path, argv[1]);
-    }
+    strcat(path, argv[1]);
     strcat(path, ".txt");
 
+    // building our enviorment from .txt file path
     buildenv(path);
 
+    // random seed
     srand(time(NULL));
 
+    // lets play
+    play();
+
+    return 0;
+}
+
+void play() {
     WINDOW *w;
     int ch;
 
@@ -201,14 +215,12 @@ int main(int argc, char *argv[]) {
         refresh();
         //sleep:
         sleep(1);
-        WON ? exit(0) : exit(1);
+        WON ? exit(EXIT_SUCCESS) : exit(EXIT_FAILURE);
     }
 
     /* End Curses */
     getch();
     endwin();
-
-    return 0;
 }
 
 /**
@@ -222,9 +234,9 @@ void buildenv(char *path) {
     fp = fopen(path, "r");
 
     if ( fp == NULL ) {
-        printf("Path not exist. %s\n", path);
+        printf("Path not exist: %s\n", path);
         sleep(0.1);
-        exit(1);
+        exit(EXIT_FAILURE);
         return;
     }
 
