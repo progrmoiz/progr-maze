@@ -48,53 +48,11 @@ int HEIGHT = 10;
 
 char env[10000];
 
-void buildenv(char *path) {
-    FILE *fp;
-    char buff[255];
-
-    fp = fopen(path, "r");
-
-    if ( fp == NULL ) {
-        // error handling..
-    }
-
-    // users inputed width and height
-    int width, height;
-    fscanf(fp, "%d%d", &height, &width);
-
-    int line = 0;
-    int w = 0;
-    int h = 0;
-    while (fgets(buff, 255, (FILE*)fp) != NULL) {
-        // calculating the width
-        w = -1;
-        for (int i = 0; buff[i] != '\0'; i+=1) {
-            env[i+line] = buff[i];
-            w += 1;
-        }
-        // calculating the height
-        h += 1;
-        line += w;
-    }
-
-    // users inputed width and height else our calculated width and height
-    if (width != 0 && height != 0) {
-        WIDTH = width;
-        HEIGHT = height;
-    } else {
-        WIDTH = w;
-        HEIGHT = h;
-    }
-    printf("%d, %d", WIDTH, HEIGHT);
-    printf("%d, %d", width, height);
-
-    fclose(fp);
-}
+/* Build up our env from file */
+void buildenv(char *path);
 
 /* Total Size of array :( */
-int TOTALSIZE() {
-    return WIDTH * HEIGHT;
-}
+int TOTALSIZE() { return WIDTH * HEIGHT; }
 
 /* Display our grid from global env array */
 void render();
@@ -230,6 +188,51 @@ int main(int argc, char *argv[]) {
     endwin();
 
     return 0;
+}
+
+/**
+ * Build up our env from file
+ * @param path relative to current file, path for a level file
+ */
+void buildenv(char *path) {
+    FILE *fp;
+    char buff[255];
+
+    fp = fopen(path, "r");
+
+    if ( fp == NULL ) {
+        // error handling..
+    }
+
+    // users inputed width and height
+    int width, height;
+    fscanf(fp, "%d%d", &height, &width);
+
+    int line = 0;
+    int w = 0;
+    int h = 0;
+    while (fgets(buff, 255, (FILE*)fp) != NULL) {
+        // calculating the width
+        w = -1;
+        for (int i = 0; buff[i] != '\0'; i+=1) {
+            env[i+line] = buff[i];
+            w += 1;
+        }
+        // calculating the height
+        h += 1;
+        line += w;
+    }
+
+    // users inputed width and height else our calculated width and height
+    if (width != 0 && height != 0) {
+        WIDTH = width;
+        HEIGHT = height;
+    } else {
+        WIDTH = w;
+        HEIGHT = h;
+    }
+
+    fclose(fp);
 }
 
 /**
