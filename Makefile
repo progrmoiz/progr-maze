@@ -1,6 +1,6 @@
 .PHONY: all project test clean
 
-all: project
+all: project test
 
 project:
 	$(MAKE) -C src

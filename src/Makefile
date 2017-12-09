@@ -4,7 +4,7 @@ PROJECT_NAME = progrmaze
 
 .PHONY: all project check test clean
 
-all: clean project
+all: clean project install
 
 CFLAG = -Wall -g
 CC = gcc
@@ -20,3 +20,7 @@ project:
 
 clean:
 	rm -rf *.o core *.core ${BUILD_DIR}
+
+install: clean project
+	echo "Saving program to /usr/local/bin"
+	sudo cp ${BUILD_DIR}/${PROJECT_NAME} /usr/local/bin
