@@ -227,7 +227,10 @@ void buildenv(char *path) {
     fp = fopen(path, "r");
 
     if ( fp == NULL ) {
-        // error handling..
+        printf("Path not exist. %s\n", path);
+        sleep(0.1);
+        exit(1);
+        return;
     }
 
     // users inputed width and height
