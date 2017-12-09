@@ -107,9 +107,9 @@ void moveplayer(int move, char grid[]);
 
 /* Our well known main function */
 int main(int argc, char *argv[]) {
-    // path build
+    // build our path from arguments
     char path[17];
-    strcpy(path, "levels/level");
+    strcpy(path, "./levels/level");
     // if no arguments our default else user prefered
     if (argc < 2) {
         strcat(path, "0");
