@@ -6,11 +6,7 @@
 #include <ncurses.h>
 #include <string.h>
 #include <signal.h>
-#ifdef _WIN32
-#include <Windows.h>
-#else
 #include <unistd.h>
-#endif
 
 // #define WIDTH 10
 // #define HEIGHT 10
@@ -201,11 +197,7 @@ int main(int argc, char *argv[]) {
         sep();
         refresh();
         //sleep:
-        #ifdef _WIN32
-        Sleep(100);
-        #else
         sleep(1);
-        #endif
         WON ? exit(0) : exit(1);
     }
 
