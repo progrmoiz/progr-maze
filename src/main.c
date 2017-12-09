@@ -5,6 +5,12 @@
 // #include <conio.h>
 #include <ncurses.h>
 #include <string.h>
+#include <signal.h>
+#ifdef _WIN32
+#include <Windows.h>
+#else
+#include <unistd.h>
+#endif
 
 // #define WIDTH 10
 // #define HEIGHT 10
@@ -170,6 +176,15 @@ int main(int argc, char *argv[]) {
             refresh();
             break;
         }
+
+    }
+
+    if (ch == '#') {
+        sep();
+        init_pair(4, COLOR_RED, COLOR_BLACK);
+        attron(COLOR_PAIR(4));
+        printw("Coming out...\n");
+        attroff(COLOR_PAIR(4));
     }
 
     if (WON) {
@@ -179,11 +194,22 @@ int main(int argc, char *argv[]) {
         printw("Congratulations!. ");
         attroff(COLOR_PAIR(1));
         printw("You done this in %d moves.\n", MOVES);
-        printw("Press any key to exit\n");
+    }
+
+    // exiting
+    if (WON || ch == '#') {
+        sep();
+        refresh();
+        //sleep:
+        #ifdef _WIN32
+        Sleep(100);
+        #else
+        sleep(1);
+        #endif
+        exit(1);
     }
 
     /* End Curses */
-    getch();
     getch();
     endwin();
 
