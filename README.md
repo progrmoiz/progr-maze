@@ -3,6 +3,7 @@ Introduction to CS (Project)
 
 ## Maze Generation
 http://rosettacode.org/wiki/Maze_generation#C
+
 http://www.delorie.com/game-room/mazes/genmaze.cgi?html+text+15+15
 
 ## Install and Running
