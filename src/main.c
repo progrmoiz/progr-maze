@@ -34,6 +34,8 @@ int WON = 0;
 int WIDTH = 10;
 int HEIGHT = 10;
 
+int FANCY_FLAG = 0;
+
 // char env[100] =
 // {
 //     'x','x','x','x','x','x','x','x','x','x',
@@ -90,10 +92,10 @@ int isemptyslot(int x, int y, char grid[]);
 char getrandomslot(char grid[]);
 
 /* get random index based on len of single dimensional array */
-int getrandomvector();
+int getrandomvector(int limit, int add);
 
 /* get index of empty slot from character grid */
-int getemptyslot(char grid[]);
+int getemptyslot(char grid[], int limit, int offset);
 
 /* set player to some empty position */
 void initplayer(char grid[]);
@@ -107,23 +109,55 @@ void moveplayer(int move, char grid[]);
 /* let's play */
 void play();
 
+/*  Carve the maze starting at x, y. */
+void CarveMaze(char *maze, int width, int height, int x, int y);
+
+/* Generate maze in matrix maze with size width, height. */
+void GenerateMaze(char *maze, int width, int height);
+
+void genbuildenv(char *env);
+
+void usageInstruction();
+
 /* Our well known main function */
 int main(int argc, char *argv[]) {
+    printf("----------------------------------------\n");
+    printf("Maze by Abdul Moiz (progrmoiz@github)\n");
+    printf("----------------------------------------\n\n");
 
-    printf("Maze playground by Moiz\n");
-    if (argc != 2) {
-        printf("usage: progrmaze <level>\n");
+    if (argc < 2) {
+        usageInstruction();
         exit(EXIT_FAILURE);
     }
 
-    // build our path from arguments
-    char path[17];
-    strcpy(path, "./levels/level");
-    strcat(path, argv[1]);
-    strcat(path, ".txt");
+    if (argc > 1 && strcmp(argv[1], "gen") == 0 && argc != 4 && argc != 5) {
+        usageInstruction();
+        exit(EXIT_FAILURE);
+    }
 
-    // building our enviorment from .txt file path
-    buildenv(path);
+    if (argc == 3 && strcmp(argv[2], "--freaky") == 0) FANCY_FLAG = 1;
+    if (argc == 5 && strcmp(argv[4], "--freaky") == 0) FANCY_FLAG = 1;
+
+    // from file
+    if (argc <= 3) {
+        // build our path from arguments
+        char path[17];
+        strcpy(path, "./levels/level");
+        strcat(path, argv[1]);
+        strcat(path, ".txt");
+
+        // building our enviorment from .txt file path
+        buildenv(path);
+    }
+
+    // generated once
+    if (argc >= 4) {
+       /* Get and validate the size. */
+        WIDTH = atoi(argv[2]) * 2 + 3;
+        HEIGHT = atoi(argv[3]) * 2 + 3;
+
+        genbuildenv(env);
+    }
 
     // random seed
     srand(time(NULL));
@@ -134,6 +168,117 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
+/*  Carve the maze starting at x, y. */
+void CarveMaze(char *maze, int width, int height, int x, int y) {
+
+   int x1, y1;
+   int x2, y2;
+   int dx, dy;
+   int dir, count;
+
+   dir = rand() % 4;
+   count = 0;
+   while(count < 4) {
+      dx = 0; dy = 0;
+      switch(dir) {
+      case 0:  dx = 1;  break;
+      case 1:  dy = 1;  break;
+      case 2:  dx = -1; break;
+      default: dy = -1; break;
+      }
+      x1 = x + dx;
+      y1 = y + dy;
+      x2 = x1 + dx;
+      y2 = y1 + dy;
+      if(   x2 > 0 && x2 < width && y2 > 0 && y2 < height
+         && maze[y1 * width + x1] == 1 && maze[y2 * width + x2] == 1) {
+         maze[y1 * width + x1] = 0;
+         maze[y2 * width + x2] = 0;
+         x = x2; y = y2;
+         dir = rand() % 4;
+         count = 0;
+      } else {
+         dir = (dir + 1) % 4;
+         count += 1;
+      }
+   }
+
+}
+
+/* Generate maze in matrix maze with size width, height. */
+void GenerateMaze(char *maze, int width, int height) {
+
+   int x, y;
+
+   /* Initialize the maze. */
+   for(x = 0; x < width * height; x++) {
+      maze[x] = 1;
+   }
+   maze[1 * width + 1] = 0;
+
+   /* Seed the random number generator. */
+   srand(time(0));
+
+   /* Carve the maze. */
+   for(y = 1; y < height; y += 2) {
+      for(x = 1; x < width; x += 2) {
+         CarveMaze(maze, width, height, x, y);
+      }
+   }
+
+   /* Set up the entry and exit. */
+   maze[0 * width + 1] = 0;
+   maze[(height - 1) * width + (width - 2)] = 0;
+
+}
+
+/**
+ * Generate our env
+ * @param env  a game env
+ */
+void genbuildenv(char *env) {
+    char *maze;
+    maze = (char*)malloc(TOTALSIZE() * sizeof(char));
+
+    GenerateMaze(maze, WIDTH, HEIGHT);
+    int i;
+    for (i = 0; i < TOTALSIZE(); i+=1) {
+        if (maze[i] == 1) {
+            env[i] = '@';
+        } else if (maze[i] == 0) {
+            env[i] = ' ';
+        }
+    }
+
+    // adding gold
+    int r = getemptyslot(env, WIDTH, TOTALSIZE() - WIDTH);
+    int x = vectorX(r);
+    int y = vectorY(r);
+    setvector(x, y, GOLD, env);
+}
+
+/**
+ * Usage Instruction
+ */
+void usageInstruction() {
+    printf("Usage: \n");
+    printf("    ./progrmaze <level> [--freaky]\n");
+    printf("    ./progrmaze gen <width> <height> [--freaky]\n");
+
+    printf("\nExamples: \n");
+    printf("    ./progrmaze a\n");
+    printf("    ./progrmaze 0 --freaky\n");
+    printf("    ./progrmaze gen 10 10\n");
+    printf("    ./progrmaze gen 5 10 --freaky\n");
+
+    printf("\nInstruction: \n");
+    printf("- Use arrow key or wasd to move around.\n");
+    printf("- Press to '#' on your keyboard to exit.\n");
+}
+
+/**
+ * let's play
+ */
 void play() {
     WINDOW *w;
     int ch;
@@ -156,7 +301,7 @@ void play() {
     /* Clear screen first */
     clear();
 
-    render();
+    FANCY_FLAG ? renderFancy() : render();
 
     while((ch = getch()) != '#') {
 
@@ -183,7 +328,7 @@ void play() {
         clear();
 
         // print our board
-        render();
+        FANCY_FLAG ? renderFancy() : render();
 
         if (WON) {
             refresh();
@@ -439,11 +584,11 @@ char getrandomslot(char grid[]) {
  * get random index based on len of single dimensional array
  * @return random index
  */
-int getrandomvector(int limit) {
+int getrandomvector(int limit, int add) {
     if (limit == 0) {
-        return rand() % TOTALSIZE();
+        return rand() % TOTALSIZE() + add;
     } else {
-        return rand() % limit;
+        return rand() % limit + add;
     }
 }
 
@@ -452,10 +597,10 @@ int getrandomvector(int limit) {
  * @param  grid a single dimensional array
  * @return      `i` index of empty slot
  */
-int getemptyslot(char grid[]) {
+int getemptyslot(char grid[], int limit, int offset) {
     while (1) {
         // try to place in first two lines
-        int r = getrandomvector(WIDTH*2);
+        int r = getrandomvector(limit, offset);
         int x = vectorX(r);
         int y = vectorY(r);
         if (isemptyslot(x, y, grid)) {
@@ -470,7 +615,7 @@ int getemptyslot(char grid[]) {
  * @param grid [description]
  */
 void initplayer(char grid[]) {
-    int index = getemptyslot(grid);
+    int index = getemptyslot(grid, WIDTH*2, 0);
     PLAYER_POS = index;
 
     // can also do this
