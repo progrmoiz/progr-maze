@@ -2,9 +2,8 @@
 Introduction to CS (Project)
 
 ## Maze Generation
-http://rosettacode.org/wiki/Maze_generation#C
-
-http://www.delorie.com/game-room/mazes/genmaze.cgi?html+text+15+15
+- http://www.delorie.com/game-room/mazes/genmaze.cgi?html+text+15+15
+- http://joewing.net/projects/maze/
 
 ## Install and Running
 Copy and paste it into your terminal
@@ -38,9 +37,3 @@ $ ./progrmaze a
 - Use arrow keys or wasd keys to move your player
 - Press '#' on your keyboard
 - Reach to 'G' gold.
-
-
-## TODO
-- add random flag
-- feeling luck rainbow color on level
-- argument parsing
