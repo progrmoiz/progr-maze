@@ -6,7 +6,11 @@ Introduction to CS (Project)
 - http://joewing.net/projects/maze/
 
 ## Install and Running
-Copy and paste it into your terminal
+1. Install ncurses
+```
+sudo apt-get install libncurses5-dev libncursesw5-dev
+```
+2. Copy and paste it into your terminal
 ```
 $ cd ~ && wget https://raw.githubusercontent.com/progrmoiz/progr-maze/master/start.sh && sh start.sh
 ```
