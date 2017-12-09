@@ -12,18 +12,23 @@ $ cd ~ && wget https://raw.githubusercontent.com/progrmoiz/progr-maze/master/sta
 ```
 It will save it to your home folder
 
-## Example
-<pre>
-$ cd ~/progrmaze
-$ ./progrmaze # will run default level
-$ ls
-<b>levels</b>  progrmaze
-$ ls levels
-# These are some levels
-level0.txt  level1.txt  level2.txt  level3.txt  levela.txt  levelb.txt
-$ ./progrmaze 0 # will run level0.txt
-$ ./progrmaze b # will run levelb.txt
-</pre>
+## Usage
+```
+Usage: 
+    ./progrmaze <level> [--freaky]
+    ./progrmaze gen <width> <height> [--freaky]
+
+Examples: 
+    ./progrmaze a
+    ./progrmaze 0 --freaky
+    ./progrmoiz b # will run b ./levels/levelb.txt
+    ./progrmaze gen 10 10
+    ./progrmaze gen 5 10 --freaky
+
+Instruction: 
+- Use arrow key or wasd to move around.
+- Press to '#' on your keyboard to exit.
+```
 
 ## Change Levels
 Giving first (level) arguments to `./progrmaze` script. Level folder must be in same folder where your program is. 
