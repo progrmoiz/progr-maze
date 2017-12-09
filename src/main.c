@@ -119,7 +119,10 @@ void genbuildenv(char *env);
 
 void usageInstruction();
 
-/* Our well known main function */
+/**
+ * Our well known main function
+ * @author Abdul Moiz
+ */
 int main(int argc, char *argv[]) {
     printf("----------------------------------------\n");
     printf("Maze by Abdul Moiz (progrmoiz@github)\n");
@@ -168,7 +171,10 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-/*  Carve the maze starting at x, y. */
+/**
+ * Carve the maze starting at x, y.
+ * @author: Joe Wingbermuehle 19990805
+ */
 void CarveMaze(char *maze, int width, int height, int x, int y) {
 
    int x1, y1;
@@ -205,7 +211,10 @@ void CarveMaze(char *maze, int width, int height, int x, int y) {
 
 }
 
-/* Generate maze in matrix maze with size width, height. */
+/**
+ * Generate maze in matrix maze with size width, height.
+ * @author: Joe Wingbermuehle 19990805
+ */
 void GenerateMaze(char *maze, int width, int height) {
 
    int x, y;
