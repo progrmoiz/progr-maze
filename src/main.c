@@ -59,6 +59,9 @@ int TOTALSIZE() { return WIDTH * HEIGHT; }
 /* Display our grid from global env array */
 void render();
 
+/* Fancy render version */
+void renderFancy();
+
 /* Python equivalent string*number */
 void characterMultiply(char c, int multi);
 
@@ -283,6 +286,42 @@ void render() {
             attroff(COLOR_PAIR(2));
         } else {
             printw("%c", env[i]);
+        }
+
+        if ((i+1) % WIDTH == 0) {
+            printw("\n");
+        }
+    }
+}
+
+/**
+ * A colorful render
+ * A lot copy pasting
+ */
+void renderFancy() {
+    printw("\n");
+    int i;
+    for (i = 0; i < TOTALSIZE(); i++) {
+
+        // M is special block
+        if (env[i] == 'M') {
+            addch((char)0x2588);
+        } else if (env[i] == '|' || env[i] == '\\' || env[i] == '/' || env[i] == 'P') {
+            init_pair(1, COLOR_BLUE, COLOR_BLACK);
+            attron(COLOR_PAIR(1));
+            printw("%c", env[i]);
+            attroff(COLOR_PAIR(1));
+        } else if (env[i] == 'G') {
+            init_pair(2, COLOR_YELLOW, COLOR_BLACK);
+            attron(COLOR_PAIR(2));
+            printw("%c", env[i]);
+            attroff(COLOR_PAIR(2));
+        } else {
+            // here is a fun part
+            attron(COLOR_PAIR(5));
+            init_pair(5, rand() % 7 + 1, COLOR_BLACK);
+            printw("%c", env[i]);
+            attroff(COLOR_PAIR(5));
         }
 
         if ((i+1) % WIDTH == 0) {
