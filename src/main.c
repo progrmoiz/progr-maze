@@ -206,7 +206,7 @@ int main(int argc, char *argv[]) {
         #else
         sleep(1);
         #endif
-        exit(1);
+        WON ? exit(0) : exit(1);
     }
 
     /* End Curses */
