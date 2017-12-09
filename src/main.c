@@ -4,12 +4,19 @@
 // It is not part of the C standard library
 // #include <conio.h>
 #include <ncurses.h>
+#include <string.h>
+#include <signal.h>
+#ifdef _WIN32
+#include <Windows.h>
+#else
+#include <unistd.h>
+#endif
 
-#define WIDTH 10
-#define HEIGHT 10
-#define TOTAL_SIZE 100
+// #define WIDTH 10
+// #define HEIGHT 10
+// #define TOTAL_SIZE 100
 
-#define PLAYER 'P'
+// #define PLAYER 'P'
 #define GOLD 'G'
 
 // #define KEY_UP 119
@@ -22,23 +29,36 @@
 #define MOVE_LEFT 3
 #define MOVE_RIGHT 4
 
+char PLAYER = 'P';
+
 int PLAYER_POS = 0;
 int MOVES = 0;
 int WON = 0;
 
-char env[100] =
-{
-    'x','x','x','x','x','x','x','x','x','x',
-    'x',' ',' ',' ',' ',' ',' ',' ',' ',' ',
-    'x','x',' ','x',' ','x',' ','x',' ','x',
-    'x','x',' ','x',' ','x',' ','x',' ','x',
-    'x',' ',' ',' ',' ',' ',' ',' ',' ',' ',
-    'x','x','x','x','x','x','x',' ',' ','x',
-    'x','x','x','x','x','x','x',' ',' ','x',
-    'x',' ','G',' ',' ',' ',' ',' ',' ',' ',
-    'x',' ','x','x','x','x','x','x','x','x',
-    'x',' ',' ',' ',' ',' ',' ',' ',' ',' ',
-};
+int WIDTH = 10;
+int HEIGHT = 10;
+
+// char env[100] =
+// {
+//     'x','x','x','x','x','x','x','x','x','x',
+//     'x',' ',' ',' ',' ',' ',' ',' ',' ',' ',
+//     'x','x',' ','x',' ','x',' ','x',' ','x',
+//     'x','x',' ','x',' ','x',' ','x',' ','x',
+//     'x',' ',' ',' ',' ',' ',' ',' ',' ',' ',
+//     'x','x','x','x','x','x','x',' ',' ','x',
+//     'x','x','x','x','x','x','x',' ',' ','x',
+//     'x',' ','G',' ',' ',' ',' ',' ',' ',' ',
+//     'x',' ','x','x','x','x','x','x','x','x',
+//     'x',' ',' ',' ',' ',' ',' ',' ',' ',' ',
+// };
+
+char env[10000];
+
+/* Build up our env from file */
+void buildenv(char *path);
+
+/* Total Size of array :( */
+int TOTALSIZE() { return WIDTH * HEIGHT; }
 
 /* Display our grid from global env array */
 void render();
@@ -86,7 +106,20 @@ void won();
 void moveplayer(int move, char grid[]);
 
 /* Our well known main function */
-int main() {
+int main(int argc, char *argv[]) {
+    // build our path from arguments
+    char path[17];
+    strcpy(path, "./levels/level");
+    // if no arguments our default else user prefered
+    if (argc < 2) {
+        strcat(path, "0");
+    } else {
+        strcat(path, argv[1]);
+    }
+    strcat(path, ".txt");
+
+    buildenv(path);
+
     srand(time(NULL));
 
     WINDOW *w;
@@ -94,6 +127,11 @@ int main() {
 
     /* Curses Initialisations */
     w = initscr();
+
+    // assci blocks doesn't support colors
+    if (env[0] != 'M') {
+        start_color();
+    }
     raw();
     keypad(stdscr, TRUE);
     noecho();
@@ -105,21 +143,25 @@ int main() {
     /* Clear screen first */
     clear();
 
-    printw("Welcome - Press # to Exit\n");
+    render();
 
     while((ch = getch()) != '#') {
 
         switch(ch)
         {
+        case 'w':
         case KEY_UP:
             moveplayer(MOVE_UP, env);
             break;
+        case 's':
         case KEY_DOWN:
             moveplayer(MOVE_DOWN, env);
             break;
+        case 'a':
         case KEY_LEFT:
             moveplayer(MOVE_LEFT, env);
             break;
+        case 'd':
         case KEY_RIGHT:
             moveplayer(MOVE_RIGHT, env);
             break;
@@ -131,14 +173,40 @@ int main() {
         render();
 
         if (WON) {
-            won();
             refresh();
             break;
         }
+
+    }
+
+    if (ch == '#') {
+        sep();
+        init_pair(4, COLOR_RED, COLOR_BLACK);
+        attron(COLOR_PAIR(4));
+        printw("Coming out...\n");
+        attroff(COLOR_PAIR(4));
     }
 
     if (WON) {
-        printw("You won in %d moves", MOVES);
+        sep();
+        init_pair(1, COLOR_GREEN, COLOR_BLACK);
+        attron(COLOR_PAIR(1));
+        printw("Congratulations!. ");
+        attroff(COLOR_PAIR(1));
+        printw("You done this in %d moves.\n", MOVES);
+    }
+
+    // exiting
+    if (WON || ch == '#') {
+        sep();
+        refresh();
+        //sleep:
+        #ifdef _WIN32
+        Sleep(100);
+        #else
+        sleep(1);
+        #endif
+        WON ? exit(0) : exit(1);
     }
 
     /* End Curses */
@@ -149,6 +217,54 @@ int main() {
 }
 
 /**
+ * Build up our env from file
+ * @param path relative to current file, path for a level file
+ */
+void buildenv(char *path) {
+    FILE *fp;
+    char buff[255];
+
+    fp = fopen(path, "r");
+
+    if ( fp == NULL ) {
+        printf("Path not exist. %s\n", path);
+        sleep(0.1);
+        exit(1);
+        return;
+    }
+
+    // users inputed width and height
+    int width, height;
+    fscanf(fp, "%d%d", &height, &width);
+
+    int line = 0;
+    int w = 0;
+    int h = 0;
+    while (fgets(buff, 255, (FILE*)fp) != NULL) {
+        // calculating the width
+        w = -1;
+        for (int i = 0; buff[i] != '\0'; i+=1) {
+            env[i+line] = buff[i];
+            w += 1;
+        }
+        // calculating the height
+        h += 1;
+        line += w;
+    }
+
+    // users inputed width and height else our calculated width and height
+    if (width != 0 && height != 0) {
+        WIDTH = width;
+        HEIGHT = height;
+    } else {
+        WIDTH = w;
+        HEIGHT = h;
+    }
+
+    fclose(fp);
+}
+
+/**
  * Display our grid from global env array
  * No code coverage.
  */
@@ -156,8 +272,25 @@ void render() {
     // system("clear");
     // clear();
     printw("\n");
-    for (int i = 0; i < TOTAL_SIZE; i++) {
-        printw("%c", env[i]);
+    for (int i = 0; i < TOTALSIZE(); i++) {
+
+        // M is special block
+        if (env[i] == 'M') {
+            addch((char)0x2588);
+        } else if (env[i] == '|' || env[i] == '\\' || env[i] == '/' || env[i] == 'P') {
+            init_pair(1, COLOR_BLUE, COLOR_BLACK);
+            attron(COLOR_PAIR(1));
+            printw("%c", env[i]);
+            attroff(COLOR_PAIR(1));
+        } else if (env[i] == 'G') {
+            init_pair(2, COLOR_YELLOW, COLOR_BLACK);
+            attron(COLOR_PAIR(2));
+            printw("%c", env[i]);
+            attroff(COLOR_PAIR(2));
+        } else {
+            printw("%c", env[i]);
+        }
+
         if ((i+1) % WIDTH == 0) {
             printw("\n");
         }
@@ -171,7 +304,7 @@ void render() {
  */
 void characterMultiply(char c, int multi) {
     for (int i = 0; i < multi; i++) {
-        printf("%c", c);
+        printw("%c", c);
     }
 }
 
@@ -179,9 +312,8 @@ void characterMultiply(char c, int multi) {
  * A horizontal seperator
  */
 void sep() {
-    printf("\n");
-    characterMultiply('-', 80);
-    printf("\n");
+    characterMultiply('-', 60);
+    printw("\n");
 }
 
 /**
@@ -261,8 +393,12 @@ char getrandomslot(char grid[]) {
  * get random index based on len of single dimensional array
  * @return random index
  */
-int getrandomvector() {
-    return rand() % TOTAL_SIZE;
+int getrandomvector(int limit) {
+    if (limit == 0) {
+        return rand() % TOTALSIZE();
+    } else {
+        return rand() % limit;
+    }
 }
 
 /**
@@ -272,7 +408,8 @@ int getrandomvector() {
  */
 int getemptyslot(char grid[]) {
     while (1) {
-        int r = getrandomvector();
+        // try to place in first two lines
+        int r = getrandomvector(WIDTH*2);
         int x = vectorX(r);
         int y = vectorY(r);
         if (isemptyslot(x, y, grid)) {
@@ -307,12 +444,20 @@ void won() {
     printw("Won");
 }
 
+int toggle = 1;
+
 /**
  * move player if empty slot
  * @param move Possible Values: MOVE_UP, MOVE_DOWN, MOVE_LEFT, MOVE_RIGHT
  * @param grid A single dimenstional array
  */
 void moveplayer(int move, char grid[]) {
+    toggle = !toggle;
+    if (move == MOVE_UP || move == MOVE_DOWN) {
+        PLAYER = '|';
+    } else {
+        PLAYER = toggle ? '\\' : '/';
+    }
     int playerx = vectorX(PLAYER_POS);
     int playery = vectorY(PLAYER_POS);
     switch (move) {
