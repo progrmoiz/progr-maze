@@ -25,9 +25,10 @@
 #define MOVE_LEFT 3
 #define MOVE_RIGHT 4
 
+// we are not currently using this
 #define NO_OF_CONSTUMES 4
-
 char CONSTUMES[NO_OF_CONSTUMES] = {'\\', '|', '/', '|'};
+
 char PLAYER = 'P';
 
 int PLAYER_POS = 0;
@@ -417,6 +418,13 @@ void buildenv(char *path) {
         line += w;
     }
 
+    if ((width != 0 && width != w) || (height != 0 && height != h-1)) {
+        printf("Error: Mismatch width or height.\n");
+        printf("Actual: Width=%d, Height=%d\n", w, h-1);
+        printf("Expected: Width=%d, Height=%d\n", width, height);
+        exit(EXIT_FAILURE);
+    }
+
     // users inputed width and height else our calculated width and height
     if (width != 0 && height != 0) {
         WIDTH = width;
@@ -656,12 +664,12 @@ int toggle = 1;
  */
 void moveplayer(int move, char grid[]) {
     toggle = !toggle;
-    // if (move == MOVE_UP || move == MOVE_DOWN) {
-    //     PLAYER = '|';
-    // } else {
-    //     PLAYER = toggle ? '\\' : '/';
-    // }
-    PLAYER = CONSTUMES[MOVES % NO_OF_CONSTUMES];
+    if (move == MOVE_UP || move == MOVE_DOWN) {
+        PLAYER = '|';
+    } else {
+        PLAYER = toggle ? '\\' : '/';
+    }
+    // PLAYER = CONSTUMES[MOVES % NO_OF_CONSTUMES];
     int playerx = vectorX(PLAYER_POS);
     int playery = vectorY(PLAYER_POS);
     switch (move) {
